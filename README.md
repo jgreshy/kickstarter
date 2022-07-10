@@ -4,9 +4,9 @@ What do I want to find out?
 - What main_categories had the largest overages from their goal?            ##DONE
 - The most popular categories and main categories                           ##DONE
 - The most successful categories and main categories                        ##DONE
-- Percentage of countries, success by country
+- Percentage of countries, success by country                               ##DONE
 - Graph that shows the average timeline of a successful project, compares it to the amount asked for
-- What goal was most successful?
+- What goal was most successful?                                            ##DONE
 - Does the goal affect the success of the campaign?
 - What are the 5 most successful campaigns in terms of USD raised?
 - What are the 5 most successful campaigns in terms of # of backers?
@@ -18,6 +18,9 @@ Tableau:
 - Category
 - Geography
 - Timeline
+
+1. Show your thought process: This suggests, Let's check etc.. put your thoughts onto paper
+2. Change percent to actual percentages (*100)
 
 
 -- I used only successful or failed in my analysis to rule out external factors. There were additional campaigns that were labeled as still live and others that were suspended. Because we don't know why they were suspended, we will not count them as failed. The goal is to find the general trends behind successful campaigns and unsuccessful kickstarter campaigns.
@@ -91,7 +94,7 @@ ORDER BY main_category_failure_rate desc
 LIMIT 20
 
 #### This combines the average_usd_above_goal and main_category_success_rate
-SELECT main_category,COUNT(main_category) AS total, ROUND((COUNTIF(state ='successful')/COUNT(category)),2) AS main_category_success_rate, ROUND(AVG((usd_pledged/NULLIF(pledged,0))*(pledged-goal)),2) AS average_usd_above_goal
+SELECT main_category, COUNTIF(state = 'successful') AS total_successful,COUNT(main_category) AS total, ROUND((COUNTIF(state ='successful')/COUNT(main_category)),2) AS main_category_success_rate, ROUND(AVG((usd_pledged/NULLIF(pledged,0))*(pledged-goal)),2) AS average_usd_above_goal
 FROM`winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed'
 GROUP BY main_category
@@ -106,7 +109,6 @@ GROUP BY main_category
 ORDER BY average_per_campaign desc
 
 #### Shows the TOP 10 most-backed main_categories, could be used for a pie chart
-
 SELECT SUM(backers)
 FROM `winged-record-348816.kickstarter_project.data`
 -- equal to 2476267
@@ -117,9 +119,17 @@ GROUP BY main_category
 ORDER BY backers_per_main_category desc
 LIMIT 10
 
-####
+#### Shows the percentage of successful campaigns by country
+SELECT COUNT(ID)
+FROM `winged-record-348816.kickstarter_project.data`
+WHERE state = 'successful'
+--Equal to 8,622
 
+SELECT country, COUNT(country) AS total_successful, ROUND(COUNT(country)/8622,2) AS percent_of_total_successful_projects
+FROM `winged-record-348816.kickstarter_project.data`
+WHERE state = 'successful'
+GROUP BY country
+ORDER BY total_successful desc
 
-
-
+#### Checking to see if there is a large difference between success rates between 
 
