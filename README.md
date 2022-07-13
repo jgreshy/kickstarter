@@ -186,3 +186,6 @@ WHERE state = 'successful' OR state = 'failed'
 GROUP BY main_category
 ORDER BY average_campaign_length desc
 
+SELECT COUNT(ID) AS Projects_Funded, SUM(usd_pledged) AS Towards_Creative_Work, SUM(backers) AS Pledges
+FROM `winged-record-348816.kickstarter_project.data`
+WHERE state = 'successful' OR state = 'failed'
