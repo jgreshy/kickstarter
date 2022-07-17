@@ -1,4 +1,4 @@
-# Kickstarter Campaigns Portfolio Project
+# Kickstarter Campaigns: Global Success Patterns
 
 ## [View Queries Here](https://github.com/jgreshy/kickstarter/blob/main/queries)
 
