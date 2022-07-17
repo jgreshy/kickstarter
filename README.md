@@ -1,4 +1,4 @@
-What do I want to find out? 
+What do I want to find out?  
 - Find the main_categories that had the largest average donations           ##DONE
 - What main_categories had the most money pledged by average of category?   ##DONE
 - What main_categories had the largest overages from their goal?            ##DONE
