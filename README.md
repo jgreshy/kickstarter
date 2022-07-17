@@ -6,7 +6,7 @@
 -- 
 
 
--- I only used completed Kickstarter campaigns, designated as either 'successful' or 'failed', in my analysis. This was done to rule out the effects of ongoing campaigns on the analysis. The goal behind this analysis is to find the general trends behind successful campaigns and unsuccessful kickstarter campaigns. Alternatively, Kickstarter can use this analysis to allocate money towards marketing channels that will bring in more backers and entrepreneurs in categories that have a track record of success.
+-- I only used completed Kickstarter campaigns, designated as either 'successful' or 'failed', in my analysis. This was done to rule out the effects of ongoing campaigns on the analysis. The goal behind this analysis is to find the general trends behind successful campaigns and unsuccessful kickstarter campaigns. Alternatively, Kickstarter can use this analysis to allocate money towards marketing channels that will bring in more backers and entrepreneurs in categories that have a track record of success. Using Excel, a random sample was taken out of the dataset of 300,000 records to be queried.
 
 -- Finds the three pieces of information first displayed on Kickstarter's homepage
 SELECT COUNT(ID) AS Projects_Funded, SUM(usd_pledged) AS Towards_Creative_Work, SUM(backers) AS Pledges
