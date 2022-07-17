@@ -2,27 +2,27 @@
 1. Show your thought process: This suggests, Let's check etc.. put your thoughts onto paper
 2. Change percent to actual percentages (*100)
 
+-- Nested queries
+-- 
 
--- I used only successful or failed in my analysis to rule out external factors. There were additional campaigns that were labeled as still live and others that were suspended. Because we don't know why they were suspended, we will not count them as failed. The goal is to find the general trends behind successful campaigns and unsuccessful kickstarter campaigns.
 
-DELETE  
+-- I only used completed Kickstarter campaigns, designated as either 'successful' or 'failed', in my analysis. This was done to rule out the effects of ongoing campaigns on the analysis. The goal behind this analysis is to find the general trends behind successful campaigns and unsuccessful kickstarter campaigns. Alternatively, Kickstarter can use this analysis to allocate money towards marketing channels that will bring in more backers and entrepreneurs in categories that have a track record of success.
+
+-- Finds the three pieces of information first displayed on Kickstarter's homepage
+SELECT COUNT(ID) AS Projects_Funded, SUM(usd_pledged) AS Towards_Creative_Work, SUM(backers) AS Pledges
 FROM `winged-record-348816.kickstarter_project.data`
-WHERE ID IS NULL# kickstarter
+WHERE state = 'successful' OR state = 'failed'
 
-Which main_category (s) had the most pledged per campaign on Average
-SELECT main_category, ROUND(AVG(usd_pledged),2) AS average_pledged_per_category
-FROM `winged-record-348816.kickstarter_project.data`
-GROUP BY main_category
-ORDER BY average_pledged_per_category desc
+-- We'll now start by querying the main_categories column to look for successful categories
 
-Groups successes and failures by main_category
+-- Groups successes and failures by main_category
 SELECT main_category,state, COUNT(state) AS total
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed'
 GROUP BY state, main_category
 ORDER BY main_category
 
-Shows the Top 10 main_category (s) with the highest number of successful campaigns
+-- Finds the Top 10 main_category (s) with the highest number of successful campaigns
 SELECT main_category,state, COUNT(state) AS total
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed'
@@ -30,7 +30,7 @@ GROUP BY state, main_category
 ORDER BY state desc, total desc
 Limit 10
 
-Shows the main_categories that had the most pledged on average
+-- Finds the Top 10 main_categories that had the most pledged per campaign (on average)
 SELECT main_category, ROUND(AVG(usd_pledged),2) AS average_per_main_category
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed'
@@ -38,16 +38,16 @@ GROUP BY main_category
 ORDER BY average_per_main_category desc
 LIMIT 10
 
-Shows the main_categories and their average differential between goals and pledged amounts. Games is the only main_category that has an average above 0 USD when at least one person pledged
-
+-- Finds the main_categories and their average differential between goals and pledged amounts.
 SELECT main_category, ROUND(AVG((usd_pledged/pledged)*(pledged-goal)),2) AS average_usd_above_goal
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed' AND pledged > 0
 GROUP BY main_category
 ORDER BY average_usd_above_goal desc
 LIMIT 10
+-- Games is the only main_category that has an average above 0 USD when at least one person pledged
 
-Shows the average differential above goal on successful campaigns
+-- Finds the average differential below/above goal on **successful campaigns**
 SELECT main_category, ROUND(AVG((usd_pledged/pledged)*(pledged-goal)),2) AS average_usd_above_goal
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful'
@@ -55,25 +55,26 @@ GROUP BY main_category
 ORDER BY average_usd_above_goal desc
 LIMIT 10
 
-Shows the Top 20 most successful main_categories that have more than 10 campaigns
-SELECT main_category,COUNT(main_category) AS total, ROUND((COUNTIF(state ='successful')/COUNT(category)),2) AS main_category_success_rate
+-- With each main category consisting of multiple categories, we'll quickly look into the most and least popular categories
+-- Finds the Top 20 most successful categories that have more than 10 campaigns
+SELECT category,COUNT(category) AS total, ROUND((COUNTIF(state ='successful')/COUNT(category)),2) AS category_success_rate
 FROM`winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed'
-GROUP BY main_category
-HAVING COUNT(main_category) > 10
-ORDER BY main_category_success_rate desc
+GROUP BY category
+HAVING COUNT(category) > 10
+ORDER BY category_success_rate desc
 LIMIT 20
  
-Shows the Top 20 least successful categories tha have more than 10 campaigns
-SELECT main_category,COUNT(main_category) AS total, ROUND((COUNTIF(state ='failed')/COUNT(category)),2) AS main_category_failure_rate
+-- Finds the Top 20 least successful categories tha have more than 10 campaigns
+SELECT category,COUNT(category) AS total, ROUND((COUNTIF(state ='failed')/COUNT(category)),2) AS category_failure_rate
 FROM`winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed'
-GROUP BY main_category
-HAVING COUNT(main_category) > 10
-ORDER BY main_category_failure_rate desc
+GROUP BY category
+HAVING COUNT(category) > 10
+ORDER BY category_failure_rate desc
 LIMIT 20
 
-This combines the average_usd_above_goal and main_category_success_rate
+-- This table combines the average_usd_above_goal and main_category_success_rate columns to find additional/patterns
 SELECT main_category, COUNTIF(state = 'successful') AS total_successful,COUNT(main_category) AS total, ROUND((COUNTIF(state ='successful')/COUNT(main_category))*100,2) AS main_category_success_rate, ROUND(AVG((usd_pledged/NULLIF(pledged,0))*(pledged-goal)),2) AS average_usd_above_goal
 FROM`winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state ='failed'
@@ -82,28 +83,30 @@ HAVING COUNT(main_category) > 10
 ORDER BY main_category_success_rate desc, average_usd_above_goal desc
 LIMIT 20
 
-Most successful main_categories by average number of backers. Also includes the average pledged by category, and total number of backers
+-- Finds the most successful main_categories by average number of backers. Also includes the average pledged by category, and total number of backers
 SELECT main_category, SUM(backers) AS total_number_of_backers, AVG(backers) AS average_per_campaign, ROUND(AVG(usd_pledged),2) AS average_pledged_per_main_category
 FROM `winged-record-348816.kickstarter_project.data`
 GROUP BY main_category
 ORDER BY average_per_campaign desc
 
-Shows the TOP 10 most-backed main_categories, could be used for a pie chart
+-- Finds the TOP 10 most-backed main_categories
 SELECT SUM(backers)
 FROM `winged-record-348816.kickstarter_project.data`
--- equal to 2476267
+-- equal to 2378111
 
-SELECT main_category, SUM(backers) AS backers_per_main_category, ROUND((SUM(backers)/2476267)*100,2) AS percent_of_total
+SELECT main_category, SUM(backers) AS backers_per_main_category, ROUND((SUM(backers)/2378111)*100,2) AS percent_of_total
 FROM `winged-record-348816.kickstarter_project.data`
 GROUP BY main_category
 ORDER BY backers_per_main_category desc
 LIMIT 10
 
-Shows the percentage of successful campaigns by country
+-- Now we'll query into other fields such as country, 
+
+-- Finds the success rates of Kickstarter campaigns in each country
 SELECT COUNT(ID)
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful'
---Equal to 8,622
+-- Equal to 8,622
 
 SELECT country, COUNT(country) AS total_successful, ROUND((COUNT(country)/8622)*100,2) AS percent_of_total_successful_projects, SUM(usd_pledged) AS total_usd_pledged
 FROM `winged-record-348816.kickstarter_project.data`
@@ -111,39 +114,30 @@ WHERE state = 'successful'
 GROUP BY country
 ORDER BY total_successful desc
 
-
-Checking to see if there is a large difference between success rates between goals
+-- Finds the difference in success rates between goal amounts. This only includes goals above $1,000.
 SELECT goal, COUNTIF(state = 'successful') AS total_successful, COUNT(goal) AS total, ROUND((COUNTIF(state = 'successful')/COUNT(state))*100,2) AS success_rate
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' OR state = 'failed'
 GROUP BY goal
-HAVING COUNT(goal) > 10
+HAVING COUNT(goal) > 10 AND goal > 1000
 ORDER BY success_rate desc
 
-Shows the success_rate of each goal
-SELECT goal, COUNTIF(state = 'successful') AS total_successful, COUNT(goal) AS total, ROUND((COUNTIF(state = 'successful')/COUNT(state))*100,2) AS success_rate
-FROM `winged-record-348816.kickstarter_project.data`
-WHERE state = 'successful' OR state = 'failed'
-GROUP BY goal
-HAVING (total) > 10 AND goal > 1000
-ORDER BY success_rate desc
-
-Top 5 campaigns with the most pledged ($)
+-- Finds the Top 5 Kickstarter campaigns with the most pledged (USD)
 SELECT name,goal, main_category, category, usd_pledged, backers
 FROM`winged-record-348816.kickstarter_project.data`
 ORDER BY pledged desc
 LIMIT 10
--- The number of backers is correlated with the amount pledged
+-- The number of backers was correlated with the amount pledged
 -- 7 were Games, 2 were Technology, 1 was Design
 
-Use this to show if there is a correlation between the total number campaigns and the success rate, could show popularity. Shows the success rate by country  
+Finds if there is a correlation between the total number of campaigns in a country and the overall success rate of the country.  
 SELECT country, COUNTIF(state = 'successful') AS total_successful, COUNTIF(state = 'successful') + COUNTIF(state = 'failed')  AS total, ROUND(COUNTIF(state = 'successful')/(NULLIF(COUNTIF(state = 'successful') + COUNTIF(state = 'failed'),0))*100,2) AS success_rate_by_country
 FROM `winged-record-348816.kickstarter_project.data`
 WHERE state = 'successful' or state = 'failed'
 GROUP BY country
 ORDER BY percent_of_total_successful_projects desc
 
-Average length of a successful campaign
+Finds the average length of a successful campaign
 WITH date_data AS
 (
 SELECT*, CAST(EXTRACT(date FROM launched) AS date) AS date_started, CAST(EXTRACT(date FROM deadline) AS date) AS date_finished
@@ -155,7 +149,6 @@ WHERE state = 'successful'
 -- 32.2 days
 -- Average failed campaign length is 35.49 days, not a significant difference
 
-When plotted, this would show a trend between the average campaign length, whether or not it was successful, and the main_category
 WITH date_data AS
 (
 SELECT*, CAST(EXTRACT(date FROM launched) AS date) AS date_started, CAST(EXTRACT(date FROM deadline) AS date) AS date_finished
@@ -166,7 +159,3 @@ FROM date_data
 WHERE state = 'successful' OR state = 'failed'
 GROUP BY main_category
 ORDER BY average_campaign_length desc
-
-SELECT COUNT(ID) AS Projects_Funded, SUM(usd_pledged) AS Towards_Creative_Work, SUM(backers) AS Pledges
-FROM `winged-record-348816.kickstarter_project.data`
-WHERE state = 'successful' OR state = 'failed'
